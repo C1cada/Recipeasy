@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.gabrielw.recipeasy.Objects.Ingredients.Container;
 import com.gabrielw.recipeasy.Objects.Ingredients.Ingredient;
+import com.gabrielw.recipeasy.Objects.Ingredients.IngredientContainer;
 
 @SpringBootTest
 class IngredientTests {
@@ -25,10 +25,10 @@ class IngredientTests {
     @Test
     void testIngredientContainter() {
         Ingredient ingredient = new Ingredient("Test Ingredient", "1");
-        Container container = new Container();
+        IngredientContainer container = new IngredientContainer("Sauce");
         container.add(ingredient);
         assertEquals("1 Test Ingredient", ingredient.getValue());
-        assertEquals("1 Test Ingredient", container.getValue());
+        assertEquals("Sauce", container.getValue());
         assertEquals(Arrays.asList(ingredient), container.getValues());
     }
 

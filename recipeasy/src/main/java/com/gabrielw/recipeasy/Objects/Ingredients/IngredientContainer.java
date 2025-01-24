@@ -3,10 +3,12 @@ package com.gabrielw.recipeasy.Objects.Ingredients;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Container implements Composite {
+public class IngredientContainer implements Composite {
     private final List<Composite> children;
+    private final String name;
 
-    public Container() {
+    public IngredientContainer(String name) {
+        this.name = name;
         children = new ArrayList<>();
     }
 
@@ -29,14 +31,6 @@ public class Container implements Composite {
 
     @Override
     public String getValue() {
-        StringBuilder value = new StringBuilder();
-        for (Composite child : children) {
-            value.append(child.getValue());
-            value.append("\n");
-        }
-        if (value.length() > 0) {
-            value.setLength(value.length() - 1);
-        }
-        return value.toString();
+        return name;
     }
 }
