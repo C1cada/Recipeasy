@@ -3,11 +3,12 @@ package com.gabrielw.recipeasy.Services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.gabrielw.recipeasy.DAOs.IngredientDAO;
 import com.gabrielw.recipeasy.Objects.Ingredients.IngredientComposite;
 
-
+@Component
 public class IngredientService {
 
     @Autowired

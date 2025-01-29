@@ -1,3 +1,3 @@
-package com.gabrielw.recipeasy;
+// package com.gabrielw.recipeasy;
 
-public record Greeting(long id, String content) { }
+// public record Greeting(long id, String content) { }

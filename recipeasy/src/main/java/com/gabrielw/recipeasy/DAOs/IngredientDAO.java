@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import com.gabrielw.recipeasy.Objects.Ingredients.IngredientComposite;
 
+@Component
 public class IngredientDAO implements DAO<IngredientComposite> {
 
     @Autowired
@@ -37,7 +39,7 @@ public class IngredientDAO implements DAO<IngredientComposite> {
     }
 
     private void upsert(IngredientComposite t){
-        boolean children = !t.getValues().isEmpty();
+        boolean children = (t.getValues() == null);
         String upsert = "INSERT INTO ingredients (key, name, quantity, children) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, quantity = ?, children = ?;";
         jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), children, t.getName(), t.getQuantity(), children);
         String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
