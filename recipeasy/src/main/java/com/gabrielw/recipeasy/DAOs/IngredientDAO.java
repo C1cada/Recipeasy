@@ -40,7 +40,8 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     private void upsert(IngredientComposite t){
         boolean children = (t.getValues() == null);
-        String upsert = "INSERT INTO ingredients (key, name, quantity, children) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, quantity = ?, children = ?;";
+        String upsert = "INSERT INTO ingredients (key, name, quantity, children) VALUES (?, ?, ?, ?)" +
+        "ON CONFLICT (id) DO UPDATE SET name = ?, quantity = ?, children = ?;";
         jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), children, t.getName(), t.getQuantity(), children);
         String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
         jdbcTemplate.update(deleteRelations, t.getKey());
