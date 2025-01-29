@@ -2,35 +2,53 @@ package com.gabrielw.recipeasy.Objects.Ingredients;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class IngredientContainer implements Composite {
-    private final List<Composite> children;
+public class IngredientContainer implements IngredientComposite {
+    private final String key;
+    private final List<IngredientComposite> children;
     private final String name;
+    private final String quantity;
 
-    public IngredientContainer(String name) {
+    public IngredientContainer(String name, String key) {
         this.name = name;
+        this.key = key;
+        this.quantity = null;
         children = new ArrayList<>();
     }
 
-    public void add(Composite child) {
+    public IngredientContainer(String name) {
+        this.name = name;
+        this.key = UUID.randomUUID().toString();
+        this.quantity = null;
+        children = new ArrayList<>();
+    }
+
+    public void add(IngredientComposite child) {
         children.add(child);
     }
 
-    public void remove(Composite child) {
+    public void remove(IngredientComposite child) {
         children.remove(child);
     }
 
     @Override
-    public List<Composite> getValues() {
-        List<Composite> values = new ArrayList<>();
-        for (Composite child : children) {
-            values.addAll(child.getValues());
-        }
-        return values;
+    public String getName() {
+        return name;
     }
 
     @Override
-    public String getValue() {
-        return name;
+    public String getQuantity() {
+        return quantity;
+    }
+
+    @Override
+    public String getKey() {
+        return key;
+    }
+
+    @Override
+    public List<IngredientComposite> getValues() {
+        return children;
     }
 }
