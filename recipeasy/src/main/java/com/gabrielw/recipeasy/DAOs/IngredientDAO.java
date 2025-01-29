@@ -45,9 +45,24 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     @Override
     public void update(IngredientComposite t) {
+        upsert(t);
+        for (IngredientComposite child : t.getValues()) {
+            update(child);
+        }
     }
 
     @Override
     public void delete(IngredientComposite t) {
+        del(t);
+        for (IngredientComposite child : t.getValues()) {
+            delete(child);
+        }
+    }
+
+    public void del(IngredientComposite t) {
+        String delete = "DELETE FROM ingredients WHERE key = ?;";
+        jdbcTemplate.update(delete, t.getKey());
+        String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
+        jdbcTemplate.update(deleteRelations, t.getKey());
     }
 }
