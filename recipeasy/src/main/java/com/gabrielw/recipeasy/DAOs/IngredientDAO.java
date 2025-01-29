@@ -13,12 +13,18 @@ public class IngredientDAO implements DAO<IngredientComposite> {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public IngredientComposite get(int id) {
+    public IngredientComposite get(String key) {
+        // String recursiveQuery = 
+        // "WITH RECURSIVE ingredient_tree AS " +
+        // "(SELECT * FROM ingredients WHERE key = ?" +
+        // "UNION SELECT i.* FROM ingredients i JOIN ingredient_relations" +
+        // "ir ON i.key = ir.child WHERE ir.parent = ?)" +
+        // " SELECT * FROM ingredient_tree;";
         return null;
     }
 
     @Override
-    public List<IngredientComposite> getAll(int id) {
+    public List<IngredientComposite> getAll() {
         return null;
     }
 
@@ -30,7 +36,7 @@ public class IngredientDAO implements DAO<IngredientComposite> {
         }
     }
 
-    public void upsert(IngredientComposite t){
+    private void upsert(IngredientComposite t){
         boolean children = !t.getValues().isEmpty();
         String upsert = "INSERT INTO ingredients (key, name, quantity, children) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, quantity = ?, children = ?;";
         jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), children, t.getName(), t.getQuantity(), children);
@@ -52,17 +58,29 @@ public class IngredientDAO implements DAO<IngredientComposite> {
     }
 
     @Override
-    public void delete(IngredientComposite t) {
-        del(t);
+    public int delete(String key) {
+        IngredientComposite t = get(key);
+        int i = 0;
+        i += del(t.getKey(), i);
         for (IngredientComposite child : t.getValues()) {
-            delete(child);
+            i += delete(child, i);
         }
+        return i;
     }
 
-    public void del(IngredientComposite t) {
+    public int delete(IngredientComposite t, int i) {
+        i += del(t.getKey(), i);
+        for (IngredientComposite child : t.getValues()) {
+            i += delete(child, i);
+        }
+        return i;
+    }
+
+    private int del(String id, int i) {
         String delete = "DELETE FROM ingredients WHERE key = ?;";
-        jdbcTemplate.update(delete, t.getKey());
+        i += jdbcTemplate.update(delete, id);
         String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
-        jdbcTemplate.update(deleteRelations, t.getKey());
+        i += jdbcTemplate.update(deleteRelations, id);
+        return i;
     }
 }
