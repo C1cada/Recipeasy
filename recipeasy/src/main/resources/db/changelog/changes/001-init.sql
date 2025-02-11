@@ -24,6 +24,6 @@ CREATE TABLE instruction_children (
     id INT PRIMARY KEY,
     parent_id VARCHAR(36) NOT NULL,
     child_id VARCHAR(36) NOT NULL,
-    FOREIGN KEY (parent_id) REFERENCES instructions(id),
-    FOREIGN KEY (child_id) REFERENCES instructions(id)
+    FOREIGN KEY (parent_id) REFERENCES instructions(key),
+    FOREIGN KEY (child_id) REFERENCES instructions(key)
 );

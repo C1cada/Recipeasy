@@ -7,9 +7,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.gabrielw.recipeasy.Objects.Steps.Instruction;
 import com.gabrielw.recipeasy.Objects.Steps.InstructionContainer;
 
-@SpringBootTest(classes = {Instruction.class, InstructionContainer.class})
+@SpringBootTest
 class StepTest {
 
+    @Test
+	void contextLoads() {
+	}
+    
     @Test
     void testStep() {
         Instruction step = new Instruction(1, "Test Step");

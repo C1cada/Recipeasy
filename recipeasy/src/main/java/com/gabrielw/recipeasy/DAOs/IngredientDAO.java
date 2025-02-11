@@ -22,6 +22,30 @@ public class IngredientDAO implements DAO<IngredientComposite> {
         // "UNION SELECT i.* FROM ingredients i JOIN ingredient_relations" +
         // "ir ON i.key = ir.child WHERE ir.parent = ?)" +
         // " SELECT * FROM ingredient_tree;";
+
+        // WITH RECURSIVE ingredient_hierarchy AS (
+        // SELECT    key,
+        //         name,
+        //         quantity,
+        //         children,
+        //         'Owner' AS path
+        // FROM employee
+        // WHERE children IS FALSE
+        
+        // UNION ALL
+        
+        // SELECT
+        //     e.key,
+        //     e.name,
+        //     e.quantity,
+        //     e.children,
+        //     ingredient_hierarchy.path || '->' || e.name
+        // FROM ingredients e, employee_hierarchy
+        // INNER JOIN ingredient_relations ON e.key = ingredient_relations.parent_id
+        // WHERE e.reports_to = employee_hierarchy.employee_id
+        // )
+        // SELECT *
+        // FROM employee_hierarchy;
         return null;
     }
 
@@ -40,7 +64,7 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     private void upsert(IngredientComposite t){
         boolean children = (t.getValues() == null);
-        String upsert = "INSERT INTO ingredients (key, name, quantity, children) VALUES (?, ?, ?, ?)" +
+        String upsert = "INSERT INTO ingredients (id, name, quantity, children) VALUES (?, ?, ?, ?)" +
         "ON CONFLICT (id) DO UPDATE SET name = ?, quantity = ?, children = ?;";
         jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), children, t.getName(), t.getQuantity(), children);
         String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
@@ -80,7 +104,7 @@ public class IngredientDAO implements DAO<IngredientComposite> {
     }
 
     private int del(String id, int i) {
-        String delete = "DELETE FROM ingredients WHERE key = ?;";
+        String delete = "DELETE FROM ingredients WHERE id = ?;";
         i += jdbcTemplate.update(delete, id);
         String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
         i += jdbcTemplate.update(deleteRelations, id);

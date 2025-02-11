@@ -31,5 +31,4 @@ class IngredientTests {
         assertEquals("Sauce", container.getName());
         assertEquals(Arrays.asList(ingredient), container.getValues());
     }
-
 }
