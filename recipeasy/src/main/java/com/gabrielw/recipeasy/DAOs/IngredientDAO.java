@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.gabrielw.recipeasy.Objects.Ingredients.Ingredient;
 import com.gabrielw.recipeasy.Objects.Ingredients.IngredientComposite;
+import com.gabrielw.recipeasy.Objects.Ingredients.IngredientContainer;
 
 @Component
 public class IngredientDAO implements DAO<IngredientComposite> {
@@ -16,37 +18,24 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     @Override
     public IngredientComposite get(String key) {
-        // String recursiveQuery = 
-        // "WITH RECURSIVE ingredient_tree AS " +
-        // "(SELECT * FROM ingredients WHERE key = ?" +
-        // "UNION SELECT i.* FROM ingredients i JOIN ingredient_relations" +
-        // "ir ON i.key = ir.child WHERE ir.parent = ?)" +
-        // " SELECT * FROM ingredient_tree;";
-
-        // WITH RECURSIVE ingredient_hierarchy AS (
-        // SELECT    key,
-        //         name,
-        //         quantity,
-        //         children,
-        //         'Owner' AS path
-        // FROM employee
-        // WHERE children IS FALSE
-        
-        // UNION ALL
-        
-        // SELECT
-        //     e.key,
-        //     e.name,
-        //     e.quantity,
-        //     e.children,
-        //     ingredient_hierarchy.path || '->' || e.name
-        // FROM ingredients e, employee_hierarchy
-        // INNER JOIN ingredient_relations ON e.key = ingredient_relations.parent_id
-        // WHERE e.reports_to = employee_hierarchy.employee_id
-        // )
-        // SELECT *
-        // FROM employee_hierarchy;
-        return null;
+        String query = "SELECT e.key, e.name, e.quantity, e.children, ARRAY_AGG(ingredient_children.child_id) " +
+                    "FROM ingredients e " +
+                    "LEFT JOIN ingredient_children ON e.key = ingredient_children.parent_id " +
+                    "WHERE e.key = ?" +
+                    "GROUP BY e.key ";
+        IngredientComposite ingredients = (IngredientComposite) jdbcTemplate.query(query, new String[]{key}, (rs, rowNum) -> {
+            if (rs.getString("array_agg") != null) {
+                IngredientContainer c = new IngredientContainer(rs.getString("name"), rs.getString("key"));
+                java.sql.Array sqlArray = rs.getArray("array_agg");
+                String[] childArray = (String[]) sqlArray.getArray();
+                for (String child : childArray) {
+                    c.add(get(child));
+                }
+                return c;
+            }
+            return new Ingredient(rs.getString("key"), rs.getString("name"), rs.getString("quantity"));
+        });
+        return ingredients;
     }
 
     @Override
@@ -56,32 +45,38 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     @Override
     public void add(IngredientComposite t) {
-        upsert(t);
-        for (IngredientComposite child : t.getValues()) {
-            add(child);
+        if (t.getValues() != null) {
+            for (IngredientComposite child : t.getValues()) {
+                add(child);
+            }
         }
+        upsert(t);
     }
 
     private void upsert(IngredientComposite t){
         boolean children = (t.getValues() == null);
-        String upsert = "INSERT INTO ingredients (id, name, quantity, children) VALUES (?, ?, ?, ?)" +
-        "ON CONFLICT (id) DO UPDATE SET name = ?, quantity = ?, children = ?;";
+        String upsert = "INSERT INTO ingredients (key, name, quantity, children) VALUES (?, ?, ?, ?)" +
+        "ON CONFLICT (key) DO UPDATE SET name = ?, quantity = ?, children = ?;";
         jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), children, t.getName(), t.getQuantity(), children);
-        String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
+        String deleteRelations = "DELETE FROM ingredient_children WHERE parent_id = ?;";
         jdbcTemplate.update(deleteRelations, t.getKey());
-        String addRelations = "INSERT INTO ingredient_relations (parent, child) VALUES (?, ?);";
-        for (IngredientComposite child : t.getValues()) {
-            jdbcTemplate.update(addRelations, t.getKey(), child.getKey());
+        String addRelations = "INSERT INTO ingredient_children (parent_id, child_id) VALUES (?, ?);";
+        if (t.getValues() != null) {
+            for (IngredientComposite child : t.getValues()) {
+                jdbcTemplate.update(addRelations, t.getKey(), child.getKey());
+            }
         }
     }
 
 
     @Override
     public void update(IngredientComposite t) {
-        upsert(t);
-        for (IngredientComposite child : t.getValues()) {
-            update(child);
+        if (t.getValues() != null) {
+            for (IngredientComposite child : t.getValues()) {
+                update(child);
+            }
         }
+        upsert(t);
     }
 
     @Override
@@ -103,11 +98,11 @@ public class IngredientDAO implements DAO<IngredientComposite> {
         return i;
     }
 
-    private int del(String id, int i) {
-        String delete = "DELETE FROM ingredients WHERE id = ?;";
-        i += jdbcTemplate.update(delete, id);
-        String deleteRelations = "DELETE FROM ingredient_relations WHERE parent_id = ?;";
-        i += jdbcTemplate.update(deleteRelations, id);
+    private int del(String key, int i) {
+        String delete = "DELETE FROM ingredients WHERE key = ?;";
+        i += jdbcTemplate.update(delete, key);
+        String deleteRelations = "DELETE FROM ingredient_children WHERE parent_id = ?;";
+        i += jdbcTemplate.update(deleteRelations, key);
         return i;
     }
 }

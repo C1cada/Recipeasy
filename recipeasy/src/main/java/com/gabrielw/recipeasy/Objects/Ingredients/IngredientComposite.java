@@ -21,14 +21,19 @@ public interface IngredientComposite {
             if (key == null){
                 return new Ingredient(name, quantity);
             } else {
-                return new Ingredient(name, quantity, key);
+                return new Ingredient(key, name, quantity);
             }
         } else {
+            IngredientContainer con;     
             if (key == null){
-                return new IngredientContainer(name);
+                con = new IngredientContainer(name);
             } else {
-                return new IngredientContainer(name, key);
+                con = new IngredientContainer(name, key);
             }
+            for (IngredientComposite value : values){
+                con.add(create(value.getKey(), value.getName(), value.getQuantity(), value.getValues()));
+            }
+            return con;
         }
     }
 }

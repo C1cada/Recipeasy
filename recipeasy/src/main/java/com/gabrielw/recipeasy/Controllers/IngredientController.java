@@ -29,7 +29,7 @@ public class IngredientController {
         return ingredientService.getAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{key}")
     public ResponseEntity<IngredientComposite> getIngredientById(@PathVariable String key) {
         IngredientComposite ingredient = ingredientService.get(key);
         if (ingredient != null) {
@@ -41,6 +41,7 @@ public class IngredientController {
 
     @PostMapping
     public IngredientComposite addIngredient(@RequestBody IngredientComposite ingredient) {
+        System.out.println(ingredient.toString());
         return ingredientService.add(ingredient);
     }
 

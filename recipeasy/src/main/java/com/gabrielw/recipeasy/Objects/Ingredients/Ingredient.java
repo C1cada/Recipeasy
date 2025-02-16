@@ -8,7 +8,7 @@ public class Ingredient implements IngredientComposite {
     private final String name;
     private final String quantity;
 
-    public Ingredient(String name, String quantity, String key) {
+    public Ingredient(String key, String name, String quantity) {
         this.name = name;
         this.quantity = quantity;
         this.key = key;
