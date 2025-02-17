@@ -15,7 +15,7 @@ CREATE TABLE ingredient_children (
 
 CREATE TABLE instructions (
     key VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    step_number int NOT NULL,
     instructions VARCHAR(255) NOT NULL,
     is_child boolean NOT NULL
 );

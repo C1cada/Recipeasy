@@ -2,42 +2,57 @@ package com.gabrielw.recipeasy.Objects.Steps;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class InstructionContainer implements Composite {
-    private final List<Composite> children;
-    private final int stepNumber;
+public class InstructionContainer implements InstructionComposite {
+    private final String key;
+    private final List<InstructionComposite> values;
+    private final int step_number;
     private final String description;
 
-    public InstructionContainer(int stepNumber, String description) {
-        children = new ArrayList<>();
-        this.stepNumber = stepNumber;
+    public InstructionContainer(String key, int step_number, String description) {
+        this.values = new ArrayList<>();
+        this.step_number = step_number;
         this.description = description;
+        this.key = key;
     }
 
-    public void add(Composite child) {
-        children.add(child);
+    public InstructionContainer(int step_number, String description) {
+        this.values = new ArrayList<>();
+        this.step_number = step_number;
+        this.description = description;
+        this.key = UUID.randomUUID().toString();
     }
 
-    public void remove(Composite child) {
-        children.remove(child);
+    public void add(InstructionComposite child) {
+        values.add(child);
+    }
+
+    public void remove(InstructionComposite child) {
+        values.remove(child);
     }
 
     @Override
-    public List<Composite> getValues() {
-        List<Composite> values = new ArrayList<>();
-        for (Composite child : children) {
-            values.addAll(child.getValues());
+    public List<InstructionComposite> getValues() {
+        List<InstructionComposite> children = new ArrayList<>();
+        for (InstructionComposite child : this.values) {
+            children.addAll(child.getValues());
         }
-        return values;
+        return children;
     }
 
     @Override
     public int getStepNumber() {
-        return stepNumber;
+        return step_number;
     }
 
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getKey() {
+        return key;
     }
 }
