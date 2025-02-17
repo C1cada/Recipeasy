@@ -22,42 +22,42 @@ import com.gabrielw.recipeasy.Services.InstructionService;
 public class InstructionController {
 
     @Autowired
-    private InstructionService ingredientService;
+    private InstructionService instructionService;
 
     @GetMapping
-    public List<InstructionComposite> getAllIngredients() {
-        return ingredientService.getAll();
+    public List<InstructionComposite> getAllInstructions() {
+        return instructionService.getAll();
     }
 
     @GetMapping("/{key}")
-    public ResponseEntity<InstructionComposite> getIngredientById(@PathVariable String key) {
-        InstructionComposite ingredient = ingredientService.get(key);
-        if (ingredient != null) {
-            return ResponseEntity.ok(ingredient);
+    public ResponseEntity<InstructionComposite> getInstructionById(@PathVariable String key) {
+        InstructionComposite instruction = instructionService.get(key);
+        if (instruction != null) {
+            return ResponseEntity.ok(instruction);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping
-    public InstructionComposite addIngredient(@RequestBody InstructionComposite ingredient) {
-        System.out.println(ingredient.toString());
-        return ingredientService.add(ingredient);
+    public InstructionComposite addInstruction(@RequestBody InstructionComposite instruction) {
+        System.err.println(instruction.getValues());
+        return instructionService.add(instruction);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<InstructionComposite> updateIngredient(@RequestBody InstructionComposite ingredientDetails) {
-        InstructionComposite updatedIngredient = ingredientService.update(ingredientDetails);
-        if (updatedIngredient != null) {
-            return ResponseEntity.ok(updatedIngredient);
+    public ResponseEntity<InstructionComposite> updateInstruction(@RequestBody InstructionComposite instructionDetails) {
+        InstructionComposite updatedInstruction = instructionService.update(instructionDetails);
+        if (updatedInstruction != null) {
+            return ResponseEntity.ok(updatedInstruction);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteIngredient(@PathVariable String key) {
-        int isDeleted = ingredientService.delete(key);
+    public ResponseEntity<Void> deleteInstruction(@PathVariable String key) {
+        int isDeleted = instructionService.delete(key);
         if (isDeleted > 0) {
             return ResponseEntity.noContent().build();
         } else {

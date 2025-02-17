@@ -1,6 +1,5 @@
 package com.gabrielw.recipeasy.Objects.Steps;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,9 +32,7 @@ public class Instruction implements InstructionComposite {
 
     @Override
     public List<InstructionComposite> getValues() {
-        List<InstructionComposite> list = new ArrayList<>();
-        list.add(this);
-        return list;
+        return null;
     }
 
     @Override
