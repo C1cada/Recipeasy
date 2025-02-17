@@ -18,12 +18,12 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     @Override
     public IngredientComposite get(String key) {
-        String query = "SELECT e.key, e.name, e.quantity, e.children, ARRAY_AGG(ingredient_children.child_id) " +
+        String query = "SELECT e.key, e.name, e.quantity, e.is_child, ARRAY_AGG(ingredient_children.child_id) " +
                     "FROM ingredients e " +
                     "LEFT JOIN ingredient_children ON e.key = ingredient_children.parent_id " +
-                    "WHERE e.key = ?" +
+                    "WHERE e.key = ? " +
                     "GROUP BY e.key ";
-        IngredientComposite ingredients = (IngredientComposite) jdbcTemplate.query(query, new String[]{key}, (rs, rowNum) -> {
+        List<IngredientComposite> ingredients = jdbcTemplate.query(query, new String[]{key}, (rs, rowNum) -> {
             if (rs.getString("array_agg") != null) {
                 IngredientContainer c = new IngredientContainer(rs.getString("name"), rs.getString("key"));
                 java.sql.Array sqlArray = rs.getArray("array_agg");
@@ -35,7 +35,10 @@ public class IngredientDAO implements DAO<IngredientComposite> {
             }
             return new Ingredient(rs.getString("key"), rs.getString("name"), rs.getString("quantity"));
         });
-        return ingredients;
+        if (ingredients.isEmpty()) {
+            return null;
+        }
+        return ingredients.get(0);
     }
 
     @Override
@@ -55,8 +58,8 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     private void upsert(IngredientComposite t){
         boolean children = (t.getValues() == null);
-        String upsert = "INSERT INTO ingredients (key, name, quantity, children) VALUES (?, ?, ?, ?)" +
-        "ON CONFLICT (key) DO UPDATE SET name = ?, quantity = ?, children = ?;";
+        String upsert = "INSERT INTO ingredients (key, name, quantity, is_child) VALUES (?, ?, ?, ?)" +
+        "ON CONFLICT (key) DO UPDATE SET name = ?, quantity = ?, is_child = ?;";
         jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), children, t.getName(), t.getQuantity(), children);
         String deleteRelations = "DELETE FROM ingredient_children WHERE parent_id = ?;";
         jdbcTemplate.update(deleteRelations, t.getKey());
