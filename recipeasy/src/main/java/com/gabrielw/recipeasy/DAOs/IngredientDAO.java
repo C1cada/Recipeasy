@@ -22,7 +22,7 @@ public class IngredientDAO implements DAO<IngredientComposite> {
                     "FROM ingredients e " +
                     "LEFT JOIN ingredient_children ON e.key = ingredient_children.parent_id " +
                     "WHERE e.key = ? " +
-                    "GROUP BY e.key ";
+                    "GROUP BY e.key ";  
         List<IngredientComposite> ingredients = jdbcTemplate.query(query, new String[]{key}, (rs, rowNum) -> {
             if (rs.getString("array_agg") != null) {
                 IngredientContainer c = new IngredientContainer(rs.getString("name"), rs.getString("key"));
