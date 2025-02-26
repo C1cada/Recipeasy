@@ -34,11 +34,7 @@ public class InstructionContainer implements InstructionComposite {
 
     @Override
     public List<InstructionComposite> getValues() {
-        List<InstructionComposite> children = new ArrayList<>();
-        for (InstructionComposite child : this.values) {
-            children.addAll(child.getValues());
-        }
-        return children;
+        return values;
     }
 
     @Override

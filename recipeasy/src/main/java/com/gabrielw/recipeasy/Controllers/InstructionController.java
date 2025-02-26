@@ -41,7 +41,6 @@ public class InstructionController {
 
     @PostMapping
     public InstructionComposite addInstruction(@RequestBody InstructionComposite instruction) {
-        System.err.println(instruction.getValues());
         return instructionService.add(instruction);
     }
 

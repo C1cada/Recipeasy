@@ -48,12 +48,11 @@ public class InstructionDAO implements DAO<InstructionComposite> {
 
     @Override
     public void add(InstructionComposite t) {
-        System.err.println(t.getValues());
-        // if (t.getValues() != null) {
-        //     for (InstructionComposite child : t.getValues()) {
-        //         add(child);
-        //     }
-        // }
+        if (t.getValues() != null) {
+            for (InstructionComposite child : t.getValues()) {
+                add(child);
+            }
+        }
         upsert(t);
     }
 
