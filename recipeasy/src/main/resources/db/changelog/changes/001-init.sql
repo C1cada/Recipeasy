@@ -39,7 +39,7 @@ CREATE TABLE recipes (
     cook_time int,
     total_time int,
     ingredient_keys VARCHAR(255),
-    instruction_keys VARCHAR(255),
+    instruction_keys VARCHAR(255)
 );
 
 CREATE TABLE tags (

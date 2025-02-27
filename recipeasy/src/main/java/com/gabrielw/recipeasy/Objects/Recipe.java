@@ -2,6 +2,8 @@ package com.gabrielw.recipeasy.Objects;
 
 import java.util.ArrayList;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gabrielw.recipeasy.Objects.Ingredients.IngredientComposite;
 import com.gabrielw.recipeasy.Objects.Steps.InstructionComposite;
 
@@ -16,6 +18,21 @@ public class Recipe {
     private IngredientComposite ingredient;
     private InstructionComposite instruction;
     private ArrayList<Tag> tags;
+
+    @JsonCreator
+    public static Recipe create(
+        @JsonProperty("key") String key,
+        @JsonProperty("name") String name, 
+        @JsonProperty("description") String description,
+        @JsonProperty("servings") int servings,
+        @JsonProperty("prepTime") int prepTime,
+        @JsonProperty("cookTime") int cookTime,
+        @JsonProperty("totalTime") int totalTime, 
+        @JsonProperty("ingredient") IngredientComposite ingredient, 
+        @JsonProperty("instruction") InstructionComposite instruction, 
+        @JsonProperty("tags") ArrayList<Tag> tags ) {
+        return new Recipe(key, name, description, servings, prepTime, cookTime, totalTime, ingredient, instruction, tags);
+    }
 
     public Recipe(
         String key,

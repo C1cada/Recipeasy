@@ -21,9 +21,9 @@ public class TagDAO implements DAO<Tag>{
 
     @Override
     public Tag get(String key) {
-        String query = "SELECT t.key, t.name" +
+        String query = "SELECT t.key, t.name " +
                     "FROM tags t " +
-                    "WHERE e.key = ? ";
+                    "WHERE t.key = ? ";
         List<Tag> tags = jdbcTemplate.query(query, (rs, rowNum) -> {
             return new Tag(rs.getString("key"), rs.getString("name"));
         }, key);

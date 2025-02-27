@@ -8,10 +8,12 @@ package com.gabrielw.recipeasy.Services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.gabrielw.recipeasy.DAOs.RecipeDAO;
 import com.gabrielw.recipeasy.Objects.Recipe;
 
+@Component
 public class RecipeService {
     @Autowired
     public RecipeDAO ingredientDAO; 

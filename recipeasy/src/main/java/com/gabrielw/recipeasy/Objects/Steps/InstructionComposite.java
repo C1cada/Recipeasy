@@ -16,7 +16,6 @@ public interface InstructionComposite {
                                        @JsonProperty("step_number") int step_number,
                                        @JsonProperty("description") String description,
                                        @JsonProperty("values") List<InstructionComposite> values) {
-        System.err.println(values);
         if (values == null){
             if (key == null){
                 return new Instruction(step_number, description);
