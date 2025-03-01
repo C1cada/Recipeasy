@@ -1,8 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { getIngredient, getIngredients } from './service/RecipeService';
+import { get } from 'http';
 
 function App() {
+  getIngredient("123").then((ingredients) => {
+    console.log(ingredients);
+  });
   return (
     <div className="App">
       <header className="App-header">
