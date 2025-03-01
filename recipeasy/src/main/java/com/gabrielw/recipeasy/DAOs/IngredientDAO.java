@@ -43,24 +43,63 @@ public class IngredientDAO implements DAO<IngredientComposite> {
 
     @Override
     public List<IngredientComposite> getAll() {
-        return null;
+        String query = "SELECT e.key, e.name, e.quantity, e.is_child, ARRAY_AGG(ingredient_children.child_id) " +
+                    "FROM ingredients e " +
+                    "LEFT JOIN ingredient_children ON e.key = ingredient_children.parent_id " +
+                    "WHERE e.is_child = false " +
+                    "GROUP BY e.key ";  
+        List<IngredientComposite> ingredients = jdbcTemplate.query(query, (rs, rowNum) -> {
+            if (rs.getString("array_agg") != null) {
+                IngredientContainer c = new IngredientContainer(rs.getString("name"), rs.getString("key"));
+                java.sql.Array sqlArray = rs.getArray("array_agg");
+                String[] childArray = (String[]) sqlArray.getArray();
+                for (String child : childArray) {
+                    c.add(get(child));
+                }
+                return c;
+            }
+            return new Ingredient(rs.getString("key"), rs.getString("name"), rs.getString("quantity"));
+        });
+        if (ingredients.isEmpty()) {
+            return null;
+        }
+        return ingredients;
     }
 
     @Override
     public void add(IngredientComposite t) {
+        boolean is_child = check_child(t.getKey());
         if (t.getValues() != null) {
             for (IngredientComposite child : t.getValues()) {
-                add(child);
+                add(child, true);
             }
         }
-        upsert(t);
+        upsert(t, is_child);
     }
 
-    private void upsert(IngredientComposite t){
-        boolean children = (t.getValues() == null);
+    public void add(IngredientComposite t, boolean is_child) {
+        if (t.getValues() != null) {
+            for (IngredientComposite child : t.getValues()) {
+                add(child, true);
+            }
+        }
+        upsert(t, is_child);
+    }
+
+    private boolean check_child(String key) {
+        String sql = "SELECT child_id FROM ingredient_children WHERE child_id = ?";
+        System.out.println(key);
+        List<String> parents = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            return rs.getString("child_id");
+        }, key);
+        System.out.println(parents);
+        return !parents.isEmpty();
+    }
+
+    private void upsert(IngredientComposite t, boolean is_child){
         String upsert = "INSERT INTO ingredients (key, name, quantity, is_child) VALUES (?, ?, ?, ?)" +
         "ON CONFLICT (key) DO UPDATE SET name = ?, quantity = ?, is_child = ?;";
-        jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), children, t.getName(), t.getQuantity(), children);
+        jdbcTemplate.update(upsert,t.getKey(), t.getName(), t.getQuantity(), is_child, t.getName(), t.getQuantity(), is_child);
         String deleteRelations = "DELETE FROM ingredient_children WHERE parent_id = ?;";
         jdbcTemplate.update(deleteRelations, t.getKey());
         String addRelations = "INSERT INTO ingredient_children (parent_id, child_id) VALUES (?, ?);";
@@ -71,15 +110,24 @@ public class IngredientDAO implements DAO<IngredientComposite> {
         }
     }
 
-
     @Override
     public void update(IngredientComposite t) {
+        boolean is_child = check_child(t.getKey());
         if (t.getValues() != null) {
             for (IngredientComposite child : t.getValues()) {
-                update(child);
+                update(child, true);
             }
         }
-        upsert(t);
+        upsert(t, is_child);
+    }
+
+    public void update(IngredientComposite t, boolean is_child) {
+        if (t.getValues() != null) {
+            for (IngredientComposite child : t.getValues()) {
+                update(child, true);
+            }
+        }
+        upsert(t, is_child);
     }
 
     @Override

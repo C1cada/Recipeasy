@@ -41,7 +41,6 @@ public class IngredientController {
 
     @PostMapping
     public IngredientComposite addIngredient(@RequestBody IngredientComposite ingredient) {
-        System.out.println(ingredient.toString());
         return ingredientService.add(ingredient);
     }
 

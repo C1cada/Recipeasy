@@ -43,24 +43,61 @@ public class InstructionDAO implements DAO<InstructionComposite> {
 
     @Override
     public List<InstructionComposite> getAll() {
-        return null;
+        String query = "SELECT e.key, e.instructions, e.step_number, e.is_child, ARRAY_AGG(instruction_children.child_id) " +
+                    "FROM instructions e " +
+                    "LEFT JOIN instruction_children ON e.key = instruction_children.parent_id " +
+                    "WHERE e.is_child = false " +
+                    "GROUP BY e.key ";
+        List<InstructionComposite> instructions = jdbcTemplate.query(query, (rs, rowNum) -> {
+            if (rs.getString("array_agg") != null) {
+                InstructionContainer c = new InstructionContainer(rs.getString("key"), rs.getInt("step_number"), rs.getString("instructions"));
+                java.sql.Array sqlArray = rs.getArray("array_agg");
+                String[] childArray = (String[]) sqlArray.getArray();
+                for (String child : childArray) {
+                    c.add(get(child));
+                }
+                return c;
+            }
+            return new Instruction(rs.getString("key"), rs.getInt("step_number"), rs.getString("instructions"));
+        });
+        if (instructions.isEmpty()) {
+            return null;
+        }
+        return instructions;
+    }
+
+    private boolean check_child(String key) {
+        String sql = "SELECT child_id FROM instruction_children WHERE child_id = ?";
+        List<String> parents = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            return rs.getString("child_id");
+        }, key);
+        return !parents.isEmpty();
     }
 
     @Override
     public void add(InstructionComposite t) {
+        boolean is_child = check_child(t.getKey());
         if (t.getValues() != null) {
             for (InstructionComposite child : t.getValues()) {
-                add(child);
+                add(child, true);
             }
         }
-        upsert(t);
+        upsert(t, is_child);
     }
 
-    private void upsert(InstructionComposite t){
-        boolean children = (t.getValues() == null);
+    public void add(InstructionComposite t, boolean is_child) {
+        if (t.getValues() != null) {
+            for (InstructionComposite child : t.getValues()) {
+                add(child, true);
+            }
+        }
+        upsert(t, is_child);
+    }
+
+    private void upsert(InstructionComposite t, boolean is_child) {
         String upsert = "INSERT INTO instructions (key, step_number, instructions, is_child) VALUES (?, ?, ?, ?)" +
         "ON CONFLICT (key) DO UPDATE SET step_number = ?, instructions = ?, is_child = ?;";
-        jdbcTemplate.update(upsert,t.getKey(), t.getStepNumber(), t.getDescription(), children, t.getStepNumber(), t.getDescription(), children);
+        jdbcTemplate.update(upsert,t.getKey(), t.getStepNumber(), t.getDescription(), is_child, t.getStepNumber(), t.getDescription(), is_child);
         String deleteRelations = "DELETE FROM instruction_children WHERE parent_id = ?;";
         jdbcTemplate.update(deleteRelations, t.getKey());
         String addRelations = "INSERT INTO instruction_children (parent_id, child_id) VALUES (?, ?);";
@@ -74,12 +111,22 @@ public class InstructionDAO implements DAO<InstructionComposite> {
 
     @Override
     public void update(InstructionComposite t) {
+        boolean is_child = check_child(t.getKey());
         if (t.getValues() != null) {
             for (InstructionComposite child : t.getValues()) {
-                update(child);
+                update(child, true);
             }
         }
-        upsert(t);
+        upsert(t, is_child);
+    }
+
+    public void update(InstructionComposite t, boolean is_child) {
+        if (t.getValues() != null) {
+            for (InstructionComposite child : t.getValues()) {
+                update(child, true);
+            }
+        }
+        upsert(t, is_child);
     }
 
     @Override
